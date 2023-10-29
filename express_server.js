@@ -7,6 +7,7 @@ app.set('view engine', 'ejs');
 //Adding the body-parser library
 app.use(express.urlencoded({ extended: true }));
 
+//"DB" for storing links
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -20,14 +21,14 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello',(req, res) => {
+app.get('/hello', (req, res) => {
   res.send('<html><body>Hello<b>World</b></body></html>\n');
 });
 
 //Rendering the urls_index
 app.get('/urls', (req, res) => {
-  const templateVars = {urls: urlDatabase}
-  res.render('urls_index',templateVars);
+  const templateVars = { urls: urlDatabase }
+  res.render('urls_index', templateVars);
 });
 
 //Rendering the  /url/new
@@ -37,7 +38,15 @@ app.get('/urls/new', (req, res) => {
 
 //Rendering the urls_show
 app.get('/urls/:id', (req, res) => {
-  const templateVars = {id:req.params.id, longURL: urlDatabase[req.params.id]}; 
+  if (!urlDatabase[req.params.id]) {
+    res.status(404);
+    res.send("No link with this ID found!");
+    return;
+  }
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  };
   res.render('urls_show', templateVars);
 });
 
@@ -47,36 +56,42 @@ app.get('/urls/:id', (req, res) => {
 let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 let strLen = 6;
 
- const generateRandomString = function(strLen, characterSet) {
+const generateRandomString = function(strLen, characterSet) {
   //stringLeng = defines number of symbols in our string
   let randomString = '';
-  for(let i = 0; i < strLen; i++) {
+  for (let i = 0; i < strLen; i++) {
     let randomPosit = Math.floor(Math.random() * characterSet.length);
     randomString += characterSet.substring(randomPosit, randomPosit + 1);
   }
   return randomString;
 };
-// console.log("Here is the random short string:", generateRandomString(strLen, characterSet));
 
 //Adding a post method to handle the urls route
 app.post('/urls', (req, res) => {
- 
+
   let newId = generateRandomString(strLen, characterSet);
   let newLongURL = req.body.longURL;
+
+  //For checking purposes to keep track on what being entered by the user
   console.log("The random string is:", newId);
   console.log("Entered link is:", newLongURL);
 
-//Saving a page link to our DB
-urlDatabase[newId] = newLongURL;
+  //Saving a page links short/long URLs to our "DB"
+  urlDatabase[newId] = newLongURL;
 
-//Redireting to a recently created short new URL
-  res.redirect(`/urls`);
+  res.redirect('/urls');
 });
 
-//Adding another route handler for short URLs
+//Adding another route handler from short to long URLs
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
+});
+
+//Deleting a link
+app.post('/urls/:id/delete', (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect('/urls');
 });
 
 
