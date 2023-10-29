@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-    <%- include('partials/_header') %>
-
+    
     <!-- Bootstrap CSS -->
     <link
       rel="stylesheet"
@@ -15,13 +13,13 @@
   </head>
 
   <body>
+    <%- include('partials/_header') %>
+
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">
-          Short URL ID: <a href="http://www.lighthouselabs.ca"><%= id %></a>
-        </p>
+        <p class="card-text">Short URL: <a href="/u/<%= id %>"><%= id %></a></p>
       </div>
       <div class="card-footer text-muted"></div>
     </div>
