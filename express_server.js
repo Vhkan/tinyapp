@@ -50,7 +50,6 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-
 //A function to generate random a string of 6 alphanumeric characters
 
 let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -69,17 +68,13 @@ const generateRandomString = function(strLen, characterSet) {
 //Adding a post method to handle the urls route
 app.post('/urls', (req, res) => {
 
-  let newId = generateRandomString(strLen, characterSet);
-  let newLongURL = req.body.longURL;
-
-  //For checking purposes to keep track on what being entered by the user
-  console.log("The random string is:", newId);
-  console.log("Entered link is:", newLongURL);
+  const newId = generateRandomString(strLen, characterSet);
+  const newLongURL = req.body.longURL;
 
   //Saving a page links short/long URLs to our "DB"
   urlDatabase[newId] = newLongURL;
 
-  res.redirect('/urls');
+  res.redirect(`/urls/${newId}`);
 });
 
 //Adding another route handler from short to long URLs
@@ -91,6 +86,12 @@ app.get('/u/:id', (req, res) => {
 //Deleting a link
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
+  res.redirect('/urls');
+});
+
+//Adding urls_show route handler
+app.post('/urls/:id', (req, res) => {
+  urlDatabase[req.params.id] = req.body.newURL;
   res.redirect('/urls');
 });
 
