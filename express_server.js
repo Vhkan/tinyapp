@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8081; //Default port
+const PORT = 8090; //Default port
 
 app.set('view engine', 'ejs');
 
@@ -92,6 +92,13 @@ app.post('/urls/:id/delete', (req, res) => {
 //Adding urls_show route handler
 app.post('/urls/:id', (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
+  res.redirect('/urls');
+});
+
+//Adign user login handler
+app.post('/login', (req, res) => {
+  const { username } = req.body;
+  res.cookie('username', username);
   res.redirect('/urls');
 });
 
