@@ -120,9 +120,15 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+//Adign user logout handler
+app.post('/logout', (req, res) => {
+  const { username } = req.body;
+  res.clearCookie('username', username);
+  res.redirect('/urls');
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`App is listening on ${PORT}!`);
 });
-
-

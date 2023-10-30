@@ -22,12 +22,21 @@
     </div>
 
     <div>
-      <form method="POST" action="/login">
-        <h5 class="card-text">Welcome: <%= username %>
-          <input type="text" placeholder="Username" name="username">
-        <button type="submit" class="btn btn-outline-secondary" value="login">Login</button>
-        </h5>
-      </form>
+      <% if(username) { %>
+           <form method="POST" action="/logout">
+            <h5 class="card-text"> Logged in as: <%= username %>
+              <button type="submit" class="btn btn-outline-secondary">Logout</button>  
+            </h5>          
+           </form>
+      <% } else { %>
+        <form method="POST" action="/login">
+          <h5 class="card-text">Welcome: <%= username %>
+            <input type="text" placeholder="Username" name="username">
+          <button type="submit" class="btn btn-outline-secondary" value="login">Login</button>
+          </h5>
+        </form>
+      <% } %>
+   
     </div>
 
   </nav>
