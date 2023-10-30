@@ -120,7 +120,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//Adign user logout handler
+//Addign user logout handler
 app.post('/logout', (req, res) => {
   const { username } = req.body;
   res.clearCookie('username', username);
