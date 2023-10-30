@@ -1,5 +1,7 @@
 const express = require('express');
+const cookieParser = require('cookie-parser')
 const app = express();
+app.use(cookieParser());
 const PORT = 8090; //Default port
 
 app.set('view engine', 'ejs');
@@ -27,13 +29,19 @@ app.get('/hello', (req, res) => {
 
 //Rendering the urls_index
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase }
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"]      
+  }
   res.render('urls_index', templateVars);
 });
 
 //Rendering the  /url/new
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = { 
+    username: req.cookies["username"]      
+  };
+  res.render('urls_new', templateVars);
 });
 
 //Rendering the urls_show
@@ -45,7 +53,8 @@ app.get('/urls/:id', (req, res) => {
   }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"]
   };
   res.render('urls_show', templateVars);
 });
@@ -102,8 +111,18 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
+//Passing in the username to the url_index template
+app.get('/urls', (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render('urls_index', templateVars);
+});
 
 
 app.listen(PORT, () => {
   console.log(`App is listening on ${PORT}!`);
 });
+
+
