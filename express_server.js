@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-//Passing in the username to the url_index template
+//Passing in the username to the page header
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
