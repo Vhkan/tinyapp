@@ -106,6 +106,7 @@ app.post('/urls/:id', (req, res) => {
 
 //Adign user login handler
 app.post('/login', (req, res) => {
+  //taking a username val from username input field and assigning it to an obj var.
   const { username } = req.body;
   res.cookie('username', username);
   res.redirect('/urls');
@@ -120,10 +121,45 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//Addign user logout handler
+//Adding user logout handler
 app.post('/logout', (req, res) => {
   const { username } = req.body;
   res.clearCookie('username', username);
+  res.redirect('/urls');
+});
+
+
+
+
+//User registration page
+app.get('/register', (req, res) => {
+  res.render('user_registration');
+});
+
+//Users Object for stoting data
+const users = {
+  user: {}
+};  
+
+//Creating a users registration handler
+app.post('/register', (req, res) => {
+  const userId = generateRandomString(strLen, characterSet);
+//Taking and saving data from input fields (email, password)
+  const { uId } = userId;
+  const { email } = req.body;
+  const { password } = req.body;
+
+  users.user['id'] = userId;
+  users.user['email'] = email;
+  users.user['password'] = password;
+
+  console.log("Users Object is:", users);
+
+  //Setting the user_id cookies
+  res.cookie('id', userId);
+  res.cookie('email', email);
+  res.cookie('password', password);
+
   res.redirect('/urls');
 });
 
