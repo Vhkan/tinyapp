@@ -120,12 +120,17 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('/urls');
 });
 
+//Addin a login handler
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
 //Adign user login handler
 app.post('/login', (req, res) => {
   //taking a username val from username input field and assigning it to an obj var.
   const { user_id } = req.body;
   res.cookie('user_id', user_id);
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 //Passing in the username to the page header
