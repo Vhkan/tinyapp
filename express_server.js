@@ -14,7 +14,8 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-//User DB
+
+//User DB from Compass
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -75,11 +76,10 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-//A function to generate random a string of 6 alphanumeric characters
 
+//A function to generate random a string of 6 alphanumeric characters
 let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 let strLen = 6;
-
 const generateRandomString = function(strLen, characterSet) {
   //stringLeng = defines number of symbols in our string
   let randomString = '';
@@ -89,6 +89,17 @@ const generateRandomString = function(strLen, characterSet) {
   }
   return randomString;
 };
+
+//A function that checks emails in our "DB"
+const getUserByEmail = function(email) {
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      return users[userId];
+    }
+  }
+  return null;
+};
+
 
 //Adding a post method to handle the urls route
 app.post('/urls', (req, res) => {
@@ -122,21 +133,62 @@ app.post('/urls/:id', (req, res) => {
 
 //Addin a login handler
 app.get('/login', (req, res) => {
-  res.render('login');
+
+  const templateVars = {
+    longURL: urlDatabase[req.params.id],
+    user: users
+  };
+
+  res.render('login', templateVars);
 });
+
+
 
 //Adign user login handler
 app.post('/login', (req, res) => {
-  //taking a username val from username input field and assigning it to an obj var.
-  const { user_id } = req.body;
-  res.cookie('user_id', user_id);
-  res.redirect('/login');
+  //taking a username val from username input field 
+  //and assigning it to an obj var.
+  // const { user_id } = req.body;
+  // res.cookie('user_id', user_id);
+  // res.redirect('/login');
+
+  //adding new login page functionality
+  const { email } = req.body;
+  const { password } = req.body;
+
+  //Using our functions: to checks emails in or "DB", gen random userId
+  const userId = generateRandomString(strLen, characterSet);
+  const user = getUserByEmail(email);
+
+  //Setting entered values to our "DB"
+  users[userId] = { id: userId, email: email, password: password };
+
+  // console.log("BD", users[userId].email);
+  // console.log("Input", email);
+
+  //Checking users credentials
+  if (email === "" || password === "") {
+    return res.status(400).send("Email and password fields cannot be blanc!");
+  };
+  if (users[userId].email !== req.cookies.email || users[userId].password !== req.cookies.password) {
+    return res.status(403).send('User with such email is not found!');
+  };
+  if (users[userId].email === req.cookies.email && users[userId].password === req.cookies.password) {
+    res.cookie('user_id', userId);
+    // res.status(200).send('Success!');
+    return res.redirect('/urls');
+  };
+
+  res.cookie('email', email);
+  res.cookie('password', password);
+
+  return res.redirect('/login');
 });
+
 
 //Passing in the username to the page header
 app.get('/urls', (req, res) => {
   const user_id = req.cookies["user_id"];
-  console.log(users[user_id].email);
   const templateVars = {
     urls: urlDatabase,
     user: users[user_id],
@@ -147,9 +199,9 @@ app.get('/urls', (req, res) => {
 
 //Adding user logout handler
 app.post('/logout', (req, res) => {
-  const { user_id } = req.body;
-  res.clearCookie('user_id', user_id);
-  res.redirect('/urls');
+  const { userId } = req.body;
+  res.clearCookie('user_id', userId);
+  res.redirect('/login');
 });
 
 
@@ -173,7 +225,6 @@ app.post('/register', (req, res) => {
 
   //Adding the username/password handling functionality
   const getUserByEmail = function(email) {
-
     for (const userId in users) {
       if (users[userId].email === email) {
         return users[userId];
@@ -181,14 +232,12 @@ app.post('/register', (req, res) => {
     }
     return null;
   };
-
   const user = getUserByEmail(email);
-
   if (user) {
-    return res.send("User with this email already exists.");
+    return res.send('User with this email already exists.');
   };
 
-  //Accessing the "DB" and passing it entered values
+  //Accessing the "DB" and passing it input entered values
   users[userId] = { id: userId, email: email, password: password };
 
   //Setting the user_id cookies

@@ -21,10 +21,12 @@
         </form>
         <% } else { %>
           <form method="POST" action="/login">
-            <a href="/register">Register</a>
             <button type="submit" class="btn btn-outline-secondary" value="login">Login</button>
           </form>
         <% } %>
+        <form action="/register" method="POST">
+          <a href="/register">Register</a>
+        </form>
     </div>
 
 
