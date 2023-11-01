@@ -6,13 +6,14 @@
   <title>Register</title>
 </head>
 <body>
-
+ 
   <div>
+    <p> <b>Please enter your username and password into the fileds to register</b> </p>
     <form method="POST" action="/register">
       Email: 
-      <input type="email" name="email">
+      <input type="email" required name="email">
       Password:
-      <input type="password" name="password">
+      <input type="password" required name="password">
       <button type="submit" class="btn btn-outline-primary">Submit</button>
     </form>
   </div>

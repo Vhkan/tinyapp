@@ -14,6 +14,19 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+//User DB
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 app.get('/', (req, res) => {
   res.send('Hello User!')
@@ -29,17 +42,19 @@ app.get('/hello', (req, res) => {
 
 //Rendering the urls_index
 app.get('/urls', (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]      
+    user_id: req.cookies["user_id"],
+    user: users
   }
   res.render('urls_index', templateVars);
 });
 
 //Rendering the  /url/new
 app.get('/urls/new', (req, res) => {
-  const templateVars = { 
-    username: req.cookies["username"]      
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+    user: users
   };
   res.render('urls_new', templateVars);
 });
@@ -54,7 +69,8 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"],
+    user: users
   };
   res.render('urls_show', templateVars);
 });
@@ -107,28 +123,29 @@ app.post('/urls/:id', (req, res) => {
 //Adign user login handler
 app.post('/login', (req, res) => {
   //taking a username val from username input field and assigning it to an obj var.
-  const { username } = req.body;
-  res.cookie('username', username);
+  const { user_id } = req.body;
+  res.cookie('user_id', user_id);
   res.redirect('/urls');
 });
 
 //Passing in the username to the page header
 app.get('/urls', (req, res) => {
+  const user_id = req.cookies["user_id"];
+  console.log(users[user_id].email);
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[user_id],
+    user_id: user_id
   };
   res.render('urls_index', templateVars);
 });
 
 //Adding user logout handler
 app.post('/logout', (req, res) => {
-  const { username } = req.body;
-  res.clearCookie('username', username);
+  const { user_id } = req.body;
+  res.clearCookie('user_id', user_id);
   res.redirect('/urls');
 });
-
-
 
 
 //User registration page
@@ -136,27 +153,41 @@ app.get('/register', (req, res) => {
   res.render('user_registration');
 });
 
-//Users Object for stoting data
-const users = {
-  user: {}
-};  
-
 //Creating a users registration handler
 app.post('/register', (req, res) => {
   const userId = generateRandomString(strLen, characterSet);
-//Taking and saving data from input fields (email, password)
-  const { uId } = userId;
+
+  //Creating new vars email/password and assigning values to them 
+  //by taking their values from the body
   const { email } = req.body;
   const { password } = req.body;
 
-  users.user['id'] = userId;
-  users.user['email'] = email;
-  users.user['password'] = password;
+  if (email === "" || password === "") {
+    return res.status(400).send("Email and password cannot be blanc!");
+  };
 
-  console.log("Users Object is:", users);
+  //Adding the username/password handling functionality
+  const getUserByEmail = function(email) {
+
+    for (const userId in users) {
+      if (users[userId].email === email) {
+        return users[userId];
+      }
+    }
+    return null;
+  };
+
+  const user = getUserByEmail(email);
+
+  if (user) {
+    return res.send("User with this email already exists.");
+  };
+
+  //Accessing the "DB" and passing it entered values
+  users[userId] = { id: userId, email: email, password: password };
 
   //Setting the user_id cookies
-  res.cookie('id', userId);
+  res.cookie('user_id', userId);
   res.cookie('email', email);
   res.cookie('password', password);
 
