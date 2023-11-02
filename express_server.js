@@ -27,6 +27,11 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  test1: {
+    id: "test1",
+    email: "test1@test.com",
+    password: "123"
+  }
 };
 
 app.get('/', (req, res) => {
@@ -45,7 +50,7 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies["user_id"],
+    user_id: req.cookies.user_id,
     user: users
   }
   res.render('urls_index', templateVars);
@@ -54,8 +59,8 @@ app.get('/urls', (req, res) => {
 //Rendering the  /url/new
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    user_id: req.cookies["user_id"],
-    user: users
+    user_id: req.cookies.user_id,
+    user: users,
   };
   res.render('urls_new', templateVars);
 });
@@ -70,7 +75,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    user_id: req.cookies["user_id"],
+    user_id: req.cookies.user_id,
     user: users
   };
   res.render('urls_show', templateVars);
@@ -125,17 +130,18 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-//Adding urls_show route handler
+//urls_show route handler
 app.post('/urls/:id', (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect('/urls');
 });
 
-//Addin a login handler
+//login handler
 app.get('/login', (req, res) => {
 
   const templateVars = {
     longURL: urlDatabase[req.params.id],
+    user_id: req.cookies.user_id,
     user: users
   };
 
@@ -143,44 +149,28 @@ app.get('/login', (req, res) => {
 });
 
 
-
-//Adign user login handler
+//user login handler
 app.post('/login', (req, res) => {
-  //taking a username val from username input field 
-  //and assigning it to an obj var.
-  // const { user_id } = req.body;
-  // res.cookie('user_id', user_id);
-  // res.redirect('/login');
 
   //adding new login page functionality
   const { email } = req.body;
   const { password } = req.body;
 
-  //Using our functions: to checks emails in or "DB", gen random userId
-  const userId = generateRandomString(strLen, characterSet);
+  //Using our functions: to checks emails in or "DB"
   const user = getUserByEmail(email);
-
-  //Setting entered values to our "DB"
-  users[userId] = { id: userId, email: email, password: password };
-
-  // console.log("BD", users[userId].email);
-  // console.log("Input", email);
-
+  console.log("User", user);
+ 
   //Checking users credentials
   if (email === "" || password === "") {
     return res.status(400).send("Email and password fields cannot be blanc!");
   };
-  if (users[userId].email !== req.cookies.email || users[userId].password !== req.cookies.password) {
+  if (user === null) {
     return res.status(403).send('User with such email is not found!');
   };
-  if (users[userId].email === req.cookies.email && users[userId].password === req.cookies.password) {
-    res.cookie('user_id', userId);
-    // res.status(200).send('Success!');
+  if (user.email === email && user.password === password) {
+    res.cookie('user_id', user.id);
     return res.redirect('/urls');
   };
-
-  res.cookie('email', email);
-  res.cookie('password', password);
 
   return res.redirect('/login');
 });
@@ -188,7 +178,7 @@ app.post('/login', (req, res) => {
 
 //Passing in the username to the page header
 app.get('/urls', (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.cookies.user_id;
   const templateVars = {
     urls: urlDatabase,
     user: users[user_id],
@@ -199,15 +189,19 @@ app.get('/urls', (req, res) => {
 
 //Adding user logout handler
 app.post('/logout', (req, res) => {
-  const { userId } = req.body;
-  res.clearCookie('user_id', userId);
+  const { user_id } = req.body;
+  res.clearCookie('user_id', user_id);
   res.redirect('/login');
 });
 
-
 //User registration page
 app.get('/register', (req, res) => {
-  res.render('user_registration');
+  const templateVars = {
+    longURL: urlDatabase[req.params.id],
+    user_id: req.cookies.user_id,
+    user: users
+  };
+  res.render('user_registration', templateVars);
 });
 
 //Creating a users registration handler
@@ -242,9 +236,7 @@ app.post('/register', (req, res) => {
 
   //Setting the user_id cookies
   res.cookie('user_id', userId);
-  res.cookie('email', email);
-  res.cookie('password', password);
-
+  
   res.redirect('/urls');
 });
 

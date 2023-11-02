@@ -17,17 +17,18 @@
     <div>
       <% if(user_id) { %>
         <form method="POST" action="/logout">
+          <label for="text">The user is logged in! </label>
           <button type="submit" class="btn btn-outline-secondary">Logout</button>
         </form>
         <% } else { %>
           <form method="POST" action="/login">
-            <button type="submit" class="btn btn-outline-secondary" value="login">Login</button>
+            <a href="/login">Login</a>
           </form>
         <% } %>
         <form action="/register" method="POST">
           <a href="/register">Register</a>
         </form>
-    </div>
+    </div> 
 
 
 </header>
