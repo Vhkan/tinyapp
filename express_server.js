@@ -15,7 +15,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-//User DB from Compass
+//User "DB" from Compass
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -56,7 +56,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//Rendering the  /url/new
+//Rendering the /url/new
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     user_id: req.cookies.user_id,
@@ -81,7 +81,6 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-
 //A function to generate random a string of 6 alphanumeric characters
 let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 let strLen = 6;
@@ -105,16 +104,12 @@ const getUserByEmail = function(email) {
   return null;
 };
 
-
 //Adding a post method to handle the urls route
 app.post('/urls', (req, res) => {
-
   const newId = generateRandomString(strLen, characterSet);
   const newLongURL = req.body.longURL;
-
   //Saving a page links short/long URLs to our "DB"
   urlDatabase[newId] = newLongURL;
-
   res.redirect(`/urls/${newId}`);
 });
 
@@ -138,28 +133,22 @@ app.post('/urls/:id', (req, res) => {
 
 //login handler
 app.get('/login', (req, res) => {
-
   const templateVars = {
     longURL: urlDatabase[req.params.id],
     user_id: req.cookies.user_id,
     user: users
   };
-
   res.render('login', templateVars);
 });
 
 
 //user login handler
 app.post('/login', (req, res) => {
-
   //adding new login page functionality
   const { email } = req.body;
   const { password } = req.body;
-
   //Using our functions: to checks emails in or "DB"
   const user = getUserByEmail(email);
-  console.log("User", user);
- 
   //Checking users credentials
   if (email === "" || password === "") {
     return res.status(400).send("Email and password fields cannot be blanc!");
@@ -171,10 +160,8 @@ app.post('/login', (req, res) => {
     res.cookie('user_id', user.id);
     return res.redirect('/urls');
   };
-
   return res.redirect('/login');
 });
-
 
 //Passing in the username to the page header
 app.get('/urls', (req, res) => {
@@ -207,36 +194,21 @@ app.get('/register', (req, res) => {
 //Creating a users registration handler
 app.post('/register', (req, res) => {
   const userId = generateRandomString(strLen, characterSet);
-
   //Creating new vars email/password and assigning values to them 
   //by taking their values from the body
   const { email } = req.body;
   const { password } = req.body;
-
   if (email === "" || password === "") {
     return res.status(400).send("Email and password cannot be blanc!");
-  };
-
-  //Adding the username/password handling functionality
-  const getUserByEmail = function(email) {
-    for (const userId in users) {
-      if (users[userId].email === email) {
-        return users[userId];
-      }
-    }
-    return null;
   };
   const user = getUserByEmail(email);
   if (user) {
     return res.send('User with this email already exists.');
   };
-
   //Accessing the "DB" and passing it input entered values
   users[userId] = { id: userId, email: email, password: password };
-
   //Setting the user_id cookies
   res.cookie('user_id', userId);
-  
   res.redirect('/urls');
 });
 
