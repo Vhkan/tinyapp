@@ -4,6 +4,7 @@ const app = express();
 app.use(cookieParser());
 const PORT = 8090; //Default port
 const {generateRandomString, getUserByEmail, urlsForUser} = require('./functions');
+const bcrypt = require("bcryptjs");
 
 app.set('view engine', 'ejs');
 
@@ -31,7 +32,6 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-
     password: "purple-monkey-dinosaur",
   },
   user2RandomID: {
@@ -178,7 +178,7 @@ app.post('/login', (req, res) => {
   if (user === null) {
     return res.status(403).send('User with such email is not found!');
   };
-  if (user.email === email && user.password === password) {
+  if (user.email === email && bcrypt.compareSync(password, user.password )) {
     res.cookie('user_id', user.id);
     return res.redirect('/urls');
   };
@@ -227,6 +227,8 @@ app.post('/register', (req, res) => {
   //by taking their values from the body
   const { email } = req.body;
   const { password } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   if (email === "" || password === "") {
     return res.status(400).send("Email and password cannot be blanc!");
   };
@@ -235,7 +237,7 @@ app.post('/register', (req, res) => {
     return res.send('User with this email already exists.');
   };
   //Accessing the "DB" and passing it input entered values
-  users[userID] = { id: userID, email: email, password: password };
+  users[userID] = { id: userID, email: email, password: hashedPassword };
   //Setting the user_id cookies
   res.cookie('user_id', userID);
   res.redirect('/urls');
