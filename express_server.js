@@ -3,16 +3,27 @@ const cookieParser = require('cookie-parser')
 const app = express();
 app.use(cookieParser());
 const PORT = 8090; //Default port
+const {generateRandomString, getUserByEmail, urlsForUser} = require('./functions');
 
 app.set('view engine', 'ejs');
 
 //Adding the body-parser library
 app.use(express.urlencoded({ extended: true }));
 
+let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+let strLen = 6;
+
 //"DB" for storing links
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 //User "DB" from Compass
@@ -20,6 +31,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
+
     password: "purple-monkey-dinosaur",
   },
   user2RandomID: {
@@ -46,14 +58,15 @@ app.get('/hello', (req, res) => {
   res.send('<html><body>Hello<b>World</b></body></html>\n');
 });
 
-//Rendering the urls_index
+//Rendering the 'My URLs' urls_index
 app.get('/urls', (req, res) => {
   const {user_id} = req.cookies;
   if (!user_id) {
     return res.redirect('/login');
-  };
+  }; //now everyone can see myurls page
+  const usersUrls = urlsForUser(urlDatabase, user_id);
   const templateVars = {
-    urls: urlDatabase,
+    urls: usersUrls,
     user: users[user_id]
   }
   res.render('urls_index', templateVars);
@@ -74,11 +87,12 @@ app.get('/urls/new', (req, res) => {
 //Rendering the urls_show
 app.get('/urls/:id', (req, res) => {
   const {user_id} = req.cookies;
-  if (!user_id) {
+  console.log("User_id", user_id);
+  console.log("URL DB", urlDatabase[req.params.id]);
+  if (user_id !== urlDatabase[req.params.id]?.userID) {
     return res.redirect('/login');
   };
-
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id]?.longURL;
   if (!longURL) {
     return res.status(404).send("No link with this ID found!");
   }
@@ -90,54 +104,51 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-//A function to generate random a string of 6 alphanumeric characters
-let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-let strLen = 6;
-const generateRandomString = function(strLen, characterSet) {
-  //stringLeng = defines number of symbols in our string
-  let randomString = '';
-  for (let i = 0; i < strLen; i++) {
-    let randomPosit = Math.floor(Math.random() * characterSet.length);
-    randomString += characterSet.substring(randomPosit, randomPosit + 1);
-  }
-  return randomString;
-};
-
-//A function that checks emails in our "DB"
-const getUserByEmail = function(email) {
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      return users[userId];
-    }
-  }
-  return null;
-};
-
 //Adding a post method to handle the urls route
 app.post('/urls', (req, res) => {
   const newId = generateRandomString(strLen, characterSet);
   const newLongURL = req.body.longURL;
+  const {user_id} = req.cookies;
   //Saving a page links short/long URLs to our "DB"
-  urlDatabase[newId] = newLongURL;
+  urlDatabase[newId] = {longURL: newLongURL, userID: user_id};
+console.log(urlDatabase);
   res.redirect(`/urls/${newId}`);
 });
 
 //Adding another route handler from short to long URLs
 app.get('/u/:id', (req, res) => {
     //accessing obj values using dynamic keys 
-    const longURL = urlDatabase[req.params.id];    
+    const longURL = urlDatabase[req.params.id].longURL;  
+    // if (!longURL) {
+    //   res.status(401).send('There is no such short URL in a DB')
+    // };
+    
   res.redirect(longURL);
 });
 
 //Deleting a link
 app.post('/urls/:id/delete', (req, res) => {
-  delete urlDatabase[req.params.id];
+  
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    res.send("Log in to the page to make any changes!")
+   };
+   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 
-//urls_show route handler
+//POST urls_show route handler
 app.post('/urls/:id', (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+  const newLongURL = req.body.newURL;
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    res.send("Log in to the page to make any changes!")
+   }
+   urlDatabase[req.params.id] = {
+    longURL: newLongURL,
+    userID: user_id
+   };
+  
   res.redirect('/urls');
 });
 
@@ -153,14 +164,13 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
 });
 
-
 //user login handler
 app.post('/login', (req, res) => {
   //adding new login page functionality
   const { email } = req.body;
   const { password } = req.body;
   //Using our functions: to checks emails in or "DB"
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   //Checking users credentials
   if (email === "" || password === "") {
     return res.status(400).send("Email and password fields cannot be blanc!");
@@ -212,7 +222,7 @@ app.get('/register', (req, res) => {
 
 //Creating a users registration handler
 app.post('/register', (req, res) => {
-  const userId = generateRandomString(strLen, characterSet);
+  const userID = generateRandomString(strLen, characterSet);
   //Creating new vars email/password and assigning values to them 
   //by taking their values from the body
   const { email } = req.body;
@@ -220,14 +230,14 @@ app.post('/register', (req, res) => {
   if (email === "" || password === "") {
     return res.status(400).send("Email and password cannot be blanc!");
   };
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (user) {
     return res.send('User with this email already exists.');
   };
   //Accessing the "DB" and passing it input entered values
-  users[userId] = { id: userId, email: email, password: password };
+  users[userID] = { id: userID, email: email, password: password };
   //Setting the user_id cookies
-  res.cookie('user_id', userId);
+  res.cookie('user_id', userID);
   res.redirect('/urls');
 });
 
