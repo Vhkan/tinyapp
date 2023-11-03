@@ -48,35 +48,44 @@ app.get('/hello', (req, res) => {
 
 //Rendering the urls_index
 app.get('/urls', (req, res) => {
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    return res.redirect('/login');
+  };
   const templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users
+    user: users[user_id]
   }
   res.render('urls_index', templateVars);
 });
 
 //Rendering the /url/new
 app.get('/urls/new', (req, res) => {
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    return res.redirect('/login');
+  };
   const templateVars = {
-    user_id: req.cookies.user_id,
-    user: users,
+    user: users[user_id]
   };
   res.render('urls_new', templateVars);
 });
 
 //Rendering the urls_show
 app.get('/urls/:id', (req, res) => {
-  if (!urlDatabase[req.params.id]) {
-    res.status(404);
-    res.send("No link with this ID found!");
-    return;
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    return res.redirect('/login');
+  };
+
+  const longURL = urlDatabase[req.params.id];
+  if (!longURL) {
+    return res.status(404).send("No link with this ID found!");
   }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    user_id: req.cookies.user_id,
-    user: users
+    longURL,
+    user: users[user_id]
   };
   res.render('urls_show', templateVars);
 });
@@ -115,7 +124,8 @@ app.post('/urls', (req, res) => {
 
 //Adding another route handler from short to long URLs
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+    //accessing obj values using dynamic keys 
+    const longURL = urlDatabase[req.params.id];    
   res.redirect(longURL);
 });
 
@@ -133,10 +143,12 @@ app.post('/urls/:id', (req, res) => {
 
 //login handler
 app.get('/login', (req, res) => {
+  const {user_id} = req.cookies;
+  if (user_id) {
+    return res.redirect('/urls');
+  };
   const templateVars = {
-    longURL: urlDatabase[req.params.id],
-    user_id: req.cookies.user_id,
-    user: users
+    user: null,
   };
   res.render('login', templateVars);
 });
@@ -165,28 +177,35 @@ app.post('/login', (req, res) => {
 
 //Passing in the username to the page header
 app.get('/urls', (req, res) => {
-  const user_id = req.cookies.user_id;
+  const {user_id} = req.cookies;
+  if (!user_id) {
+    return res.status(400).send('User is not logged in!');
+  };
+
   const templateVars = {
     urls: urlDatabase,
     user: users[user_id],
-    user_id: user_id
   };
+
   res.render('urls_index', templateVars);
 });
 
 //Adding user logout handler
 app.post('/logout', (req, res) => {
-  const { user_id } = req.body;
-  res.clearCookie('user_id', user_id);
+  res.clearCookie('user_id');
   res.redirect('/login');
 });
 
 //User registration page
 app.get('/register', (req, res) => {
+
+  const {user_id} = req.cookies;
+  if (user_id) {
+    return res.redirect('/urls');
+  };
+  
   const templateVars = {
-    longURL: urlDatabase[req.params.id],
-    user_id: req.cookies.user_id,
-    user: users
+    user: null
   };
   res.render('user_registration', templateVars);
 });
