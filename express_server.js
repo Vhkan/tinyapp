@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = 8090;
-const { generateRandomString, getUserByEmail, urlsForUser } = require('./functions');
+const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
 
