@@ -1,4 +1,3 @@
-
 //A function to generate random a string of 6 alphanumeric characters
 let characterSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 let strLen = 6;
@@ -12,7 +11,7 @@ const generateRandomString = function(strLen, characterSet) {
   return randomString;
 };
 
-//A function that checks emails in our "DB"
+//A function that checks emails in our users "DB"
 const getUserByEmail = function(email, users) {
   for (const userID in users) {
     if (users[userID].email === email) {
