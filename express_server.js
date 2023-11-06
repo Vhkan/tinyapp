@@ -92,9 +92,7 @@ app.get('/urls/new', (req, res) => {
 //Rendering the urls_show
 app.get('/urls/:id', (req, res) => {
   const { user_id } = req.session;
-  console.log("User_id", user_id);
-  console.log("URL DB", urlDatabase[req.params.id]);
-  if (user_id !== urlDatabase[req.params.id]?.userID) {
+   if (user_id !== urlDatabase[req.params.id]?.userID) {
     return res.redirect('/login');
   };
   const longURL = urlDatabase[req.params.id]?.longURL;
