@@ -26,5 +26,5 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - After successfull registration you will be redirected to the URLs page.
 - Click on "Create New URL" and enter a URL into the "Enter URL" field.
 - Click on "Submit" button and you'll be redirected to the page where you can enter a new short URL into "New URL" field.
-- Next click on "Submit" button and you'll be redirected to the your personal URLs page where you can edid or delete your links.    
+- Next click on "Submit" button and you'll be redirected to the your personal URLs page where you can edit or delete your links.    
 
