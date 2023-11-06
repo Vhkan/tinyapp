@@ -52,7 +52,7 @@ const users = {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello User!')
+  res.redirect('/login')
 });
 
 app.get('/urls.json', (req, res) => {
@@ -114,7 +114,6 @@ app.post('/urls', (req, res) => {
   const { user_id } = req.session;
   //Saving a page links short/long URLs to our "DB"
   urlDatabase[newId] = { longURL: newLongURL, userID: user_id };
-  console.log(urlDatabase);
   res.redirect(`/urls/${newId}`);
 });
 
