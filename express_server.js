@@ -9,6 +9,7 @@ app.set('view engine', 'ejs');
 
 //Adding the body-parser library
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 //CookieSession encryption
 app.use(cookieSession({
